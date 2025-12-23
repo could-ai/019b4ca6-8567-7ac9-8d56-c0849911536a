@@ -1,183 +1,207 @@
 import 'package:flutter/material.dart';
+import 'package:couldai_user_app/screens/chat_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.health_and_safety, color: Color(0xFF009688)),
-            SizedBox(width: 8),
-            Text('Hello, Patient'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildGreetingCard(context),
-            const SizedBox(height: 24),
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Good Morning,',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const Text(
+                        'Patient',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    child: IconButton(
+                      icon: const Icon(Icons.history),
+                      color: Theme.of(context).colorScheme.primary,
+                      onPressed: () {
+                        // Navigate to history or records if needed
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const Spacer(),
+
+            // Agent Avatar / Visualizer
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Pulse Effect
+                  AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      return Container(
+                        width: 200 + (_controller.value * 20),
+                        height: 200 + (_controller.value * 20),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1 - (_controller.value * 0.05)),
+                        ),
+                      );
+                    },
+                  ),
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.face_3,
+                          size: 80,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "I'm Noor",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // Prompt
             const Text(
-              'Health Vitals',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              "How can I help you today?",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildVitalCard(
-                    context,
-                    'Heart Rate',
-                    '72 bpm',
-                    Icons.favorite,
-                    Colors.redAccent,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildVitalCard(
-                    context,
-                    'Blood Pressure',
-                    '120/80',
-                    Icons.water_drop,
-                    Colors.blueAccent,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Recent Analysis',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _buildAnalysisCard(
-              context,
-              'Blood Test Results',
-              'Analyzed on Oct 24',
-              'Everything looks normal. Vitamin D is slightly low.',
-              Icons.science,
-            ),
-            const SizedBox(height: 12),
-            _buildAnalysisCard(
-              context,
-              'Cardiology Report',
-              'Analyzed on Oct 10',
-              'Sinus rhythm. No abnormalities detected.',
-              Icons.monitor_heart,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildGreetingCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.primary,
-            Theme.of(context).colorScheme.secondary,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.face_3, size: 35, color: Color(0xFF009688)),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'How are you feeling today?',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'I am here to help you analyze your health data.',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+            const Spacer(),
 
-  Widget _buildVitalCard(BuildContext context, String title, String value,
-      IconData icon, Color iconColor) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: iconColor, size: 28),
-            const SizedBox(height: 12),
+            // Mic Interface
+            GestureDetector(
+              onTap: () {
+                // Navigate to ChatScreen which is now the main interaction point
+                // We use the global navigation or tab switching
+                // Since we are inside a tab view, we might want to switch tabs.
+                // But for simplicity, we can push the chat screen or let the user tap the bottom nav.
+                // A better UX for "Agentic First" is that this button ACTIVATES the agent.
+                // We'll simulate this by navigating to the Chat tab or pushing the ChatScreen.
+                
+                // Finding the parent MainScaffoldState to switch tab would be ideal, 
+                // but pushing ChatScreen is a safe fallback for immediate interaction.
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const ChatScreen()),
+                );
+              },
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.mic,
+                  color: Colors.white,
+                  size: 36,
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
             Text(
-              value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              "Tap to speak",
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 14,
+              ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildAnalysisCard(BuildContext context, String title, String date,
-      String summary, IconData icon) {
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(date, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 4),
-            Text(summary, maxLines: 2, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 40),
           ],
         ),
-        isThreeLine: true,
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {
-          // Navigate to details
-        },
       ),
     );
   }

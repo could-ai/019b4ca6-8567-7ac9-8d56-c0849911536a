@@ -11,6 +11,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isListening = false;
+  bool _isVoiceMode = true; // Default to voice mode
 
   final List<Map<String, dynamic>> _messages = [
     {
@@ -90,8 +91,29 @@ class _ChatScreenState extends State<ChatScreen> {
         if (mounted && _isListening) {
           setState(() {
             _isListening = false;
-            _textController.text = "I have a mild fever."; // Mock voice-to-text result
+            // Mock voice-to-text result
+            final voiceText = "I have a mild fever.";
+            _messages.add({
+              'isUser': true,
+              'text': voiceText,
+              'time': 'Now',
+            });
+            
+            // Trigger response
+            Future.delayed(const Duration(seconds: 1), () {
+              if (mounted) {
+                setState(() {
+                  _messages.add({
+                    'isUser': false,
+                    'text': _generateMockResponse(voiceText),
+                    'time': 'Now',
+                  });
+                });
+                _scrollToBottom();
+              }
+            });
           });
+          _scrollToBottom();
         }
       });
     }
@@ -157,56 +179,123 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          if (_isListening)
-            Container(
-              padding: const EdgeInsets.all(8),
-              color: Colors.redAccent.withOpacity(0.1),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.mic, color: Colors.redAccent, size: 16),
-                  SizedBox(width: 8),
-                  Text("Listening...", style: TextStyle(color: Colors.redAccent)),
-                ],
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
-                  color: _isListening ? Colors.red : Colors.grey,
-                  onPressed: _toggleListening,
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                FloatingActionButton(
-                  mini: true,
-                  onPressed: _sendMessage,
-                  elevation: 0,
-                  child: const Icon(Icons.send),
-                ),
-              ],
-            ),
+          _buildInputArea(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isVoiceMode)
+              _buildVoiceInterface()
+            else
+              _buildTextInput(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVoiceInterface() {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _toggleListening,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _isListening ? Colors.redAccent : Theme.of(context).colorScheme.primary,
+              boxShadow: [
+                BoxShadow(
+                  color: (_isListening ? Colors.redAccent : Theme.of(context).colorScheme.primary).withOpacity(0.4),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Icon(
+              _isListening ? Icons.stop : Icons.mic,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _isVoiceMode = false;
+                });
+              },
+              icon: const Icon(Icons.keyboard),
+              label: const Text("Type instead"),
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextInput() {
+    return Row(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.mic),
+          onPressed: () {
+            setState(() {
+              _isVoiceMode = true;
+            });
+          },
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        Expanded(
+          child: TextField(
+            controller: _textController,
+            decoration: InputDecoration(
+              hintText: 'Type a message...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.grey[100],
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            onSubmitted: (_) => _sendMessage(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        FloatingActionButton(
+          mini: true,
+          onPressed: _sendMessage,
+          elevation: 0,
+          child: const Icon(Icons.send),
+        ),
+      ],
     );
   }
 }

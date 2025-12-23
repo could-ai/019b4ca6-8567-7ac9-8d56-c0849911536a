@@ -37,14 +37,14 @@ class _MainScaffoldState extends State<MainScaffold> {
         onDestinationSelected: _onItemTapped,
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Home',
+            icon: Icon(Icons.face_3_outlined),
+            selectedIcon: Icon(Icons.face_3),
+            label: 'Noor',
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Chat with Noor',
+            label: 'Chat',
           ),
           NavigationDestination(
             icon: Icon(Icons.medical_services_outlined),
